@@ -1,0 +1,7 @@
+ipch/*
+realMap/video/*
+realMap/x64/*
+x64/*
+realMap.VC.db
+realMap/realMap.vcxproj.user
+realMap.VC.VC.opendb
