@@ -14,5 +14,7 @@
 #include <iomanip>
 #include <time.h>
 #include <opencv2/opencv.hpp>
-
+#include <thread>
+#include <list>
+#include <windows.h>
 // TODO:  在此处引用程序需要的其他头文件
