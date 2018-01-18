@@ -9,10 +9,10 @@ using namespace std;
 using namespace cv;
 
 #if 1
-void thread_task(vector<string> camPath, vector<list<Mat>> &camFrameList, int i) {
+void thread_task(string camPath, vector<list<Mat>> &camFrameList, int i) {
 	VideoCapture cap;
 	Mat img,temp;
-	cap.open(camPath[i]);
+	cap.open(camPath);
 	while (true)
 	{
 		cap >> img;
@@ -42,7 +42,7 @@ int main() {
 	//hCamera.loadMask();
 	for (int i = 0; i < 6; i++)
 	{
-		hCamera.threads[i] = thread(thread_task, camPath, ref(hCamera.m_camFrameList),i);
+		hCamera.threads[i] = thread(thread_task, camPath[i], ref(hCamera.m_camFrameList), i);
 		hCamera.threads[i].detach();
 	}
 
@@ -75,13 +75,18 @@ int main() {
 			}
 			for (int i = 0; i < hCamera.m_camNum; i++)
 			{
-				hCamera.m_camCurrrentFrame[i] = hCamera.m_camFrameList[i].front().clone();
+				hCamera.m_camCurrrentFrame[i] = hCamera.m_camFrameList[i].back().clone();
 				hCamera.m_camFrameList[i].pop_front();
 				hTransform.warpMat(hCamera.m_camCurrrentFrame[i], result, hTransform.m_transformList[i], hCamera.m_camMask[i]);
 			}
 
 			cout << (cvGetTickCount() - tstart) / cvGetTickFrequency() / 1000 << "ms" << endl;
 			tstart = cvGetTickCount();
+			for (int k = 0; k < hTransform.m_pointList.size(); k++)
+			{
+				//circle(result, hTransform.m_pointList[k], 4, Scalar(0, 0, 255), -1);
+				circle(result, hTransform.m_pointListTrans[k], 4, Scalar(0, 255 - k / 4 * 255 / 6, k / 4 * 255 / 6), -1);
+			}
 			result = hTransform.drawCross(result, 80);
 			setMouseCallback("result", Transform::on_mouse, (void *)&hTransform);
 			imshow("result", result);
