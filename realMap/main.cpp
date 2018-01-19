@@ -62,7 +62,7 @@ int main() {
 	{
 		int flag = 0;
 		for (int i = 0; i < hCamera.m_camNum; i++) {
-			cout << hCamera.m_camFrameList[i].size() << "  ";
+			//cout << hCamera.m_camFrameList[i].size() << "  ";
 			if (0 < hCamera.m_camFrameList[i].size()) {
 				flag++;
 			}
@@ -73,6 +73,7 @@ int main() {
 			if (result.isContinuous()) {
 				memset(result.data, 0, result.rows*result.cols*result.channels());
 			}
+#pragma omp parallel for
 			for (int i = 0; i < hCamera.m_camNum; i++)
 			{
 				hCamera.m_camCurrrentFrame[i] = hCamera.m_camFrameList[i].back().clone();

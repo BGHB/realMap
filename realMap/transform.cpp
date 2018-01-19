@@ -190,9 +190,9 @@ void Transform::warpMat(Mat & src, Mat & result, Mat transform, Mat mask)
 				resultData[3 * resultCol +  1] = srcData[3 * i + 1];
 				resultData[3 * resultCol + 2] = srcData[3 * i + 2];
 			}
-			i+=1;
+			i += 4;
 		}
-		j+=1;
+		j += 4;
 	}
 }
 
