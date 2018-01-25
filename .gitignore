@@ -5,3 +5,4 @@ realMap/x64/*
 x64/*
 *.VC.*
 realMap/*.vcxproj*
+transMat*
