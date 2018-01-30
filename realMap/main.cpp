@@ -8,75 +8,60 @@
 using namespace std;
 using namespace cv;
 
-//查表法20181025
-//读取映射矩阵 去重拼接显示
-#if 0
-void thread_task(string camPath, list<Mat> &camFrameList, int i) {
-	VideoCapture cap;
+//读取配置文件，计算映射矩阵，通过查表法计算拼接结果
+#if 1
+void thread_task(VideoCapture &cap, list<Mat> &camFrameList) {
 	Mat img;
-	cap.open(camPath);
-	if (!cap.isOpened())
-		cout << "cam " << i << " opened failed!" << endl;
 	while (true)
 	{
 		cap >> img;
 		if (!img.empty())
 		{
-			camFrameList.push_back(img.clone());
+			camFrameList.push_back(img);
 		}
 		this_thread::sleep_for(2ms);
 	}
 }
-
 
 int main() {
 	Camera hCamera;
 	hCamera.init();
 
 	thread threads;
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < hCamera.m_camPath.size(); i++)
 	{
-		threads = thread(thread_task, hCamera.m_camPath[i], ref(hCamera.m_camFrameList[i]), i);
+		threads = thread(thread_task, ref(hCamera.m_capList[i]), ref(hCamera.m_camFrameList[i]));
 		threads.detach();
-	}
-	
-	cout << "初始化..." << endl;
-	
-	FileStorage readfile("transMatrix.xml", FileStorage::READ);
-	readfile["transMatrix"] >> hCamera.transMat;
-	readfile.release();
-
+	}	
 	double tstart = cvGetTickCount();
-	//namedWindow("result", 1);
+	hCamera.transMat = hCamera.getTransMat(hCamera.m_transformList);
+	int count = 100;
 	while (true)
 	{
 		int flag = 0;
 		for (int i = 0; i < hCamera.m_camNum; i++) {
 			cout << hCamera.m_camFrameList[i].size() << "  ";
-			if (30 < hCamera.m_camFrameList[i].size())
-			{
-				hCamera.m_camFrameList[i].clear();
-			}
+			//if (30 < hCamera.m_camFrameList[i].size())
+			//{
+			//	hCamera.m_camFrameList[i].clear();
+			//}
 			if (0 < hCamera.m_camFrameList[i].size()) {
 				flag++;
 			}
 		}	
 		cout << endl;
-		if (6 == flag) {
+		if (hCamera.m_camPath.size() == flag) {
 			for (int k = 0; k < hCamera.m_camNum; k++)
 			{
 				hCamera.m_camCurrrentFrame[k] = hCamera.m_camFrameList[k].back().clone();
 				hCamera.m_camFrameList[k].pop_front();
 			}
-			
-
-			if (hCamera.result.isContinuous()) {
-				memset(hCamera.result.data, 0, hCamera.result.rows * hCamera.result.cols * hCamera.result.channels());
-			}
+#pragma omp parallel for						
 			for (int j = 0; j < hCamera.result.rows; j++)
 			{
 				uchar *resultData = hCamera.result.ptr<uchar>(j);
 				double *transMatData = hCamera.transMat.ptr<double>(j);
+
 				for (int i = 0; i < hCamera.result.cols; i++)
 				{					
 					if (transMatData[4*i] < 1200000.)
@@ -88,22 +73,22 @@ int main() {
 					}					
 				}
 			}
-
-			cout << "                       耗时：" << (cvGetTickCount() - tstart) / cvGetTickFrequency() / 1000 << "ms" << endl;
-			tstart = cvGetTickCount();
-			//for (int k = 0; k < hCamera.m_pointList.size(); k++)
-			//{
-				//circle(result, hTransform.m_pointList[k], 4, Scalar(0, 0, 255), -1);
-				//circle(result, hCamera.m_pointListTrans[k], 4, Scalar(0, 255 - k / 4 * 255 / 6, k / 4 * 255 / 6), -1);
-			//}
-			hCamera.result = hCamera.drawCross(hCamera.result, 80);
-			//setMouseCallback("hCamera.result", Camera::on_mouse, (void *)&hCamera);
+			//cout << "ddddddddddddddddddddddddddddddddd耗时：" << (cvGetTickCount() - tstart) / cvGetTickFrequency() / 1000 << "ms" << endl;
+			//tstart = cvGetTickCount();
+			if (0 == count--)
+			{
+				cout << "                               耗时：" << (cvGetTickCount() - tstart) / cvGetTickFrequency() / 1000 << "ms" << endl;
+				tstart = cvGetTickCount();
+				count = 100;
+			}
+			
+			//hCamera.result = hCamera.drawCross(hCamera.result, 80);
 			imshow("result", hCamera.result);
 			waitKey(1);
 		}
 		else
 		{
-			Sleep(3);
+			Sleep(2);
 		}
 	}
 	return 0;
@@ -113,7 +98,7 @@ int main() {
 
 
 //生成config.xml
-#if 1
+#if 0
 void thread_task(VideoCapture &cap, list<Mat> &camFrameList) {
 	Mat img;
 	while (true)
@@ -160,9 +145,7 @@ int main() {
 			for (int k = 0; k < hCamera.m_camNum; k++)
 			{
 				hCamera.m_camCurrrentFrame[k] = hCamera.m_camFrameList[k].back().clone();
-				
-				//hCamera.m_camFrameList[k].pop_front();
-				
+				//hCamera.m_camFrameList[k].pop_front();	
 			}
 			if (hCamera.result.isContinuous()) {
 				memset(hCamera.result.data, 0, hCamera.result.rows * hCamera.result.cols * hCamera.result.channels());

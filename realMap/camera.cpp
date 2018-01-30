@@ -24,16 +24,32 @@ void Camera::init()
 	//距离，序号，列，行（dist, num, x, y）
 	transMat.create(result.rows, result.cols, CV_64FC4);        
 
-	//加载配置文件（包括，相机/视频路径、标记点、转换矩阵等）
-	FileStorage readFile("cameraPath.xml", FileStorage::READ);
-	if (!readFile.isOpened())
-	{
-		cout<<"config file load failed!" << endl;
+	//加载配置文件,相机/视频路径、转换前的点、转换后的点、准换矩阵
+	FileStorage readFile("config.xml", FileStorage::READ);
+	if (readFile.isOpened()) {
+		readFile["camPath"] >> m_camPath;
+		readFile["pointList"] >> m_pointList;
+		readFile["transformList"] >> m_transformList;
+		readFile.release();
+		m_pointListTrans = getPointListTrans(m_pointList, m_transformList);
 	}
-	readFile["camPath"] >> m_camPath;
-	readFile.release();
-
-
+	
+	//打开摄像头并保存句柄和视频Size
+	for (int i = 0; i < m_camPath.size(); i++)
+	{
+		VideoCapture cap;
+		cap.open(m_camPath[i]);
+		Point2i frameSize;
+		if (cap.isOpened()) {
+			cout << "camera " << i << " is opened!" << endl;
+			frameSize.x = cap.get(CAP_PROP_FRAME_WIDTH);
+			frameSize.y = cap.get(CAP_PROP_FRAME_HEIGHT);
+			m_frameSizeList.push_back(frameSize);
+			m_capList.push_back(cap);
+		}else {
+			cout << "cam " << i << " opened failed!" << endl;
+		}
+	}
 }
 
 void Camera::init_generate()
