@@ -2,7 +2,7 @@
 ipch/*
 realMap/video/*
 realMap/x64/*
+realMap/copy/*
 x64/*
 *.VC.*
 realMap/*.vcxproj*
-transMat*

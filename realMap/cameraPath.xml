@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<camPath>
+  "rtsp://admin:Hk123456@192.168.10.119/cam/realmonitor?channel=1&amp;subtype=0"
+  rtsp://admin:Hk123456@192.168.10.124/video1
+  rtsp://admin:Hk123456@192.168.10.125/video1
+  "rtsp://admin:Hk123456@192.168.10.120/cam/realmonitor?channel=1&amp;subtype=0"
+  "rtsp://admin:Hk123456@192.168.10.121/cam/realmonitor?channel=1&amp;subtype=0"
+  rtsp://admin:Hk123456@192.168.10.122/sub/av_stream</camPath>
+</opencv_storage>
