@@ -26,6 +26,8 @@ void thread_task(VideoCapture &cap, list<Mat> &camFrameList) {
 int main() {
 	Camera hCamera;
 	hCamera.init();
+	list<Mat> saveList;
+	VideoWriter write("C:\\Users\\handewei\\Desktop\\Vid1.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(1760, 880));
 
 	thread threads;
 	for (int i = 0; i < hCamera.m_camPath.size(); i++)
@@ -35,62 +37,64 @@ int main() {
 	}	
 	double tstart = cvGetTickCount();
 	hCamera.transMat = hCamera.getTransMat(hCamera.m_transformList);
-	int count = 100;
 	while (true)
 	{
 		int flag = 0;
 		for (int i = 0; i < hCamera.m_camNum; i++) {
 			cout << hCamera.m_camFrameList[i].size() << "  ";
-			//if (30 < hCamera.m_camFrameList[i].size())
-			//{
-			//	hCamera.m_camFrameList[i].clear();
-			//}
 			if (0 < hCamera.m_camFrameList[i].size()) {
 				flag++;
 			}
 		}	
 		cout << endl;
 		if (hCamera.m_camPath.size() == flag) {
+			tstart = cvGetTickCount();
 			for (int k = 0; k < hCamera.m_camNum; k++)
 			{
-				hCamera.m_camCurrrentFrame[k] = hCamera.m_camFrameList[k].back().clone();
+				hCamera.m_camCurrrentFrame[k] = hCamera.m_camFrameList[k].back();
 				hCamera.m_camFrameList[k].pop_front();
 			}
-#pragma omp parallel for						
+			
+#pragma omp parallel for
 			for (int j = 0; j < hCamera.result.rows; j++)
 			{
 				uchar *resultData = hCamera.result.ptr<uchar>(j);
-				double *transMatData = hCamera.transMat.ptr<double>(j);
-
+				int *transMatData = hCamera.transMat.ptr<int>(j);
+				
 				for (int i = 0; i < hCamera.result.cols; i++)
 				{					
-					if (transMatData[4*i] < 1200000.)
+					if (transMatData[4*i] < 1310720)
 					{
-						uchar *srcData = hCamera.m_camCurrrentFrame[transMatData[4 * i+1]].ptr<uchar>(transMatData[4 * i + 2]);				
-						resultData[3 * i] = srcData[3 * (uint)transMatData[4 * i + 3]];
-						resultData[3 * i+ 1] = srcData[3 * (uint)transMatData[4 * i + 3] + 1];
-						resultData[3 * i +2] = srcData[3 * (uint)transMatData[4 * i + 3] + 2];
+						uchar *srcData = hCamera.m_camCurrrentFrame[transMatData[4 * i+1]].ptr<uchar>(transMatData[4 * i + 2]);	
+						uint index = 3 * (uint)transMatData[4 * i + 3];
+						resultData[3 * i] = srcData[index];
+						resultData[3 * i+ 1] = srcData[index + 1];
+						resultData[3 * i +2] = srcData[index + 2];
 					}					
 				}
 			}
-			//cout << "dddddddddddddddddddddddddddddddddºÄÊ±£º" << (cvGetTickCount() - tstart) / cvGetTickFrequency() / 1000 << "ms" << endl;
-			//tstart = cvGetTickCount();
-			if (0 == count--)
-			{
-				cout << "                               ºÄÊ±£º" << (cvGetTickCount() - tstart) / cvGetTickFrequency() / 1000 << "ms" << endl;
-				tstart = cvGetTickCount();
-				count = 100;
-			}
-			
 			//hCamera.result = hCamera.drawCross(hCamera.result, 80);
 			imshow("result", hCamera.result);
-			waitKey(1);
+			saveList.push_back(hCamera.result.clone());
+			if ('q' == waitKey(1))
+			{
+				break;
+			}
+			cout << "                               ºÄÊ±£º" << (cvGetTickCount() - tstart) / cvGetTickFrequency() / 1000 << "ms" << endl;	
 		}
 		else
 		{
-			Sleep(2);
+			Sleep(3);
 		}
 	}
+	while (!saveList.empty())
+	{
+
+		write << saveList.front();
+		saveList.pop_front();
+
+	}
+	write.release();
 	return 0;
 }
 

@@ -22,7 +22,7 @@ void Camera::init()
 
 	result.create(imgHeight - 200, imgWidth - 160, CV_8UC3);
 	//距离，序号，列，行（dist, num, x, y）
-	transMat.create(result.rows, result.cols, CV_64FC4);        
+	transMat.create(result.rows, result.cols, CV_32SC4);        
 
 	//加载配置文件,相机/视频路径、转换前的点、转换后的点、准换矩阵
 	FileStorage readFile("config.xml", FileStorage::READ);
@@ -139,7 +139,7 @@ void Camera::init_generate()
 
 	result.create(imgHeight - 200, imgWidth - 160, CV_8UC3);
 	//距离，序号，列，行（dist, num, x, y）
-	transMat.create(result.rows, result.cols, CV_64FC4);
+	transMat.create(result.rows, result.cols, CV_32SC4);
 }
 
 vector<Point2f> Camera::getPointListTrans(vector<Point2f> pointList, vector<Mat> transformList) {
@@ -186,17 +186,8 @@ vector<Mat> Camera::getTransformList(vector <Point2f> pointList, vector <Point2f
 Mat Camera::getTransMat(vector<Mat> transformList)
 {
 	Mat temp;
-	temp.create(transMat.rows, transMat.cols, CV_64FC4);
-	int r = 1;
-	int c = temp.rows * temp.cols * temp.channels();
-	for (int j = 0; j < r; j++)
-	{
-		double *data = temp.ptr<double>(j);
-		for (int i = 0; i < c; i++)
-		{
-			data[i] = 1440000.;
-		}
-	}
+	temp.create(transMat.rows, transMat.cols, CV_32SC4);
+	memset(temp.data, 1, temp.cols*temp.rows*temp.channels()*sizeof(int));
 	
 	for (int k = 0; k < transformList.size(); k++)
 	{
@@ -213,7 +204,7 @@ Mat Camera::getTransMat(vector<Mat> transformList)
 				//cout << resultRow<<", "<< resultCol << endl;
 				if (transRow >= 0 && transRow < temp.rows && transCol >= 0 && transCol < temp.cols)
 				{
-					double *data = temp.ptr<double>(transRow);
+					int *data = temp.ptr<int>(transRow);
 					int dist = (i - (m_frameSizeList[k].x >> 1))*(i - (m_frameSizeList[k].x >> 1)) + (j - (m_frameSizeList[k].y >> 1))*(j - (m_frameSizeList[k].y >> 1));
 					if (dist < data[4 * transCol])
 					{
@@ -228,7 +219,6 @@ Mat Camera::getTransMat(vector<Mat> transformList)
 	}
 	return temp;
 }
-
 
 
 //自动初始化
