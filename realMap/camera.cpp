@@ -123,7 +123,7 @@ void Camera::init_generate()
 			m_capList.push_back(cap);
 		}
 		else{
-			cout << "cam " << i << " opened failed!" << endl;
+			cout << "camera " << i << " is opened failed!" << endl;
 		}
 	}
 	
@@ -201,11 +201,11 @@ Mat Camera::getTransMat(vector<Mat> transformList)
 			{
 				transCol = (i * px0[0] + j * px0[1] + px0[2]) / (i * px2[0] + j * px2[1] + px2[2]);
 				transRow = (i * px1[0] + j * px1[1] + px1[2]) / (i * px2[0] + j * px2[1] + px2[2]);
-				//cout << resultRow<<", "<< resultCol << endl;
+				
 				if (transRow >= 0 && transRow < temp.rows && transCol >= 0 && transCol < temp.cols)
 				{
 					int *data = temp.ptr<int>(transRow);
-					int dist = (i - (m_frameSizeList[k].x >> 1))*(i - (m_frameSizeList[k].x >> 1)) + (j - (m_frameSizeList[k].y >> 1))*(j - (m_frameSizeList[k].y >> 1));
+					int dist = (i - (m_frameSizeList[k].x >> 1)) * (i - (m_frameSizeList[k].x >> 1)) + (j - (m_frameSizeList[k].y >> 1)) * (j - (m_frameSizeList[k].y >> 1));
 					if (dist < data[4 * transCol])
 					{
 						data[4 * transCol] = dist;
@@ -218,79 +218,6 @@ Mat Camera::getTransMat(vector<Mat> transformList)
 		}
 	}
 	return temp;
-}
-
-
-//自动初始化
-void Camera::inittt(vector<Mat> & m_transformList)
-{
-	Mat transform;
-	transform.create(3, 3, CV_64FC1);
-	for (int i = 0; i < Camera::m_camNum; i++) {
-		m_transformList.push_back(transform.clone());
-		for (int i = 0; i < 4; i++)
-		{
-			m_pointList.push_back(Point2f(0, 0));
-			m_pointListTrans.push_back(Point(0, 0));
-		}
-	}
-
-	//判断transform文件是否存在
-	if ((_access(filename, 0) == -1))  //文件不存在
-	{
-		m_pointList = { Point2f(385, 1003), Point2f(1576, 927), Point2f(851, 261), Point2f(225, 228), Point2f(315, 619), Point2f(1049, 64), Point2f(1191, 250), Point2f(441, 805),
-			Point2f(617, 322), Point2f(947, 247), Point2f(226, 581), Point2f(557, 846), Point2f(480, 200), Point2f(888, 151), Point2f(133, 662), Point2f(357, 843),
-			Point2f(1006, 130), Point2f(1029, 551), Point2f(163, 577), Point2f(162, 151), Point2f(1617, 872), Point2f(225, 542), Point2f(363, 232), Point2f(1322, 172) };
-		for (int i = 0; i < m_pointList.size(); i++)
-		{
-			m_pointListTrans[i].x = i / 4 * imgWidth / Camera::m_camNum + m_pointList[i].x / Camera::m_camNum;
-			m_pointListTrans[i].y = i / 4 * imgHeight / Camera::m_camNum + m_pointList[i].y / Camera::m_camNum;
-		}
-
-		for (int i = 0; i < Camera::m_camNum; i++)
-		{
-			vector<Point2f> corners(4);
-			corners[0] = m_pointList[i * 4];     	    // left-top
-			corners[1] = m_pointList[i * 4 + 1]; 	    // left-bottom
-			corners[2] = m_pointList[i * 4 + 2]; 	    // right-top
-			corners[3] = m_pointList[i * 4 + 3]; 	    // right-bottom
-			vector<Point2f> corners_trans(4);
-			corners_trans[0] = m_pointListTrans[i * 4];
-			corners_trans[1] = m_pointListTrans[i * 4 + 1];
-			corners_trans[2] = m_pointListTrans[i * 4 + 2];
-			corners_trans[3] = m_pointListTrans[i * 4 + 3];
-
-			m_transformList[i] = getPerspectiveTransform(corners, corners_trans);
-		}
-
-		ofstream writeFile(filename);
-		for (int i = 0; i < Camera::m_camNum * 4; i++)
-		{
-			writeFile << m_pointList[i].x << " ";
-			writeFile << m_pointList[i].y << " ";
-		}
-		writeFile << "\n";
-		for (int i = 0; i < Camera::m_camNum * 4; i++)
-		{
-			writeFile << m_pointListTrans[i].x << " ";
-			writeFile << m_pointListTrans[i].y << " ";
-		}
-		writeFile << "\n";
-
-		for (int i = 0; i < Camera::m_camNum; i++)
-		{
-			for (int r = 0; r < m_transformList[0].rows; r++)
-			{
-				double * data = m_transformList[i].ptr<double>(r);
-				for (int c = 0; c < m_transformList[0].cols; c++)
-				{
-					writeFile << data[c] << " ";
-				}
-				writeFile << "\n";
-			}
-		}
-		writeFile.close();
-	}
 }
 
 void Camera::saveTransformList()
@@ -321,7 +248,6 @@ void Camera::saveTransformList()
 	writeFile << "transformList" << m_transformList;
 	writeFile.release();
 }
-
 
 //鼠标操作
 void Camera::on_mouse(int event, int x, int y, int flags, void* ustc)
@@ -354,7 +280,6 @@ void Camera::on_mouse(int event, int x, int y, int flags, void* ustc)
 	}
 }
 
-
 //画纵横线
 Mat Camera::drawCross(Mat & img, int distance) {
 	for (int j = 0; j < img.rows; j++)
@@ -364,7 +289,7 @@ Mat Camera::drawCross(Mat & img, int distance) {
 			uchar *data = img.ptr<uchar>(j);
 			for (int i = 0; i < img.cols; i++)
 			{
-				data[3 * i + 2] = 255;
+				data[3 * i + 1] = 255;
 			}
 		}
 		else
@@ -374,7 +299,7 @@ Mat Camera::drawCross(Mat & img, int distance) {
 				if (i % distance == (distance - 1))
 				{
 					uchar *data = img.ptr<uchar>(j);
-					data[3 * i + 2] = 255;
+					data[3 * i + 1] = 255;
 				}
 			}
 		}

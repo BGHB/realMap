@@ -22,14 +22,12 @@ public:
 	double                  m_imgScale = 1;
 	
 	int m_key = 0;
-	char* filename = "sdf";
 
 	vector<Mat>             m_camMask;
 	vector<Mat>             m_camFrame;
 	vector<Mat>             m_camCurrrentFrame;
 	vector<list<Mat> >      m_camFrameList;
 	Mat result, transMat;
-
 
 
 	void                    init();
@@ -39,8 +37,6 @@ public:
 	Mat 			        getTransMat(vector<Mat> transformList);
 	void                    saveTransformList();
 	
-	
-	void inittt(vector<Mat> & m_transformList);
 	
 	void warpMat(Mat & src, Mat & result, Mat transform, Mat mask);
 	Mat drawCross(Mat & img, int distance = 100);

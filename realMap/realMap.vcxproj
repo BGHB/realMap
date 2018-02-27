@@ -86,7 +86,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\opencv\opencv330\build\include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\opencv\opencv330\build\include;D:\opencv\opencv330\build\include\opencv2\tracking;$(IncludePath)</IncludePath>
     <LibraryPath>D:\opencv\opencv330\build\x64\vc14\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
