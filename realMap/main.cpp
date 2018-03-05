@@ -9,22 +9,14 @@ using namespace std;
 using namespace cv;
 
 //读取配置文件，计算映射矩阵，通过查表法计算拼接结果
-#if 1
+#if 0
 void thread_task(VideoCapture &cap, list<Mat> &camFrameList) {
 	Mat img, gray, result;
-	/*Mat resultHSV;
-	vector<Mat> HSV;*/
 	while (true)
 	{
 		cap >> img;
 		if (!img.empty())
 		{
-			/*cvtColor(img, resultHSV, CV_BGR2HSV);
-			split(resultHSV, HSV);
-			equalizeHist(HSV[2], HSV[2]);
-			merge(HSV, resultHSV);
-			cvtColor(resultHSV, img, CV_HSV2BGR);*/
-
 			camFrameList.push_back(img.clone());
 		}
 		this_thread::sleep_for(2ms);
@@ -35,7 +27,7 @@ int main() {
 	Camera hCamera;
 	hCamera.init();
 	list<Mat> saveList;
-	//VideoWriter write("C:\\Users\\handewei\\Desktop\\Vid1.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(1760, 880));
+	//VideoWriter write("C:\\Users\\handewei\\Desktop\\Vid1we.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(1760, 880));
 
 	thread threads;
 	for (int i = 0; i < hCamera.m_camPath.size(); i++)
@@ -102,7 +94,7 @@ int main() {
 				}
 			}
 
-			hCamera.result = hCamera.drawCross(hCamera.result, 80);
+			//hCamera.result = hCamera.drawCross(hCamera.result, 80);
 			imshow("result", hCamera.result);
 			//saveList.push_back(hCamera.result.clone());
 			if ('q' == waitKey(1))
@@ -114,12 +106,12 @@ int main() {
 			Sleep(3);
 		}
 	}
-	/*while (!saveList.empty())
-	{
-		write << saveList.front();
-		saveList.pop_front();
-	}
-	write.release();*/
+	//while (!saveList.empty())
+	//{
+	//	write << saveList.front();
+	//	saveList.pop_front();
+	//}
+	//write.release();
 	return 0;
 }
 
@@ -342,6 +334,7 @@ int main() {
 			cout << "camera " << i << " is opened!" << endl;
 			frameSize.x = cap.get(CAP_PROP_FRAME_WIDTH);
 			frameSize.y = cap.get(CAP_PROP_FRAME_HEIGHT);
+			cout << i <<"    "<<cap.get(CAP_PROP_FPS) << endl;
 			hCamera.m_frameSizeList.push_back(frameSize);
 			hCamera.m_capList.push_back(cap);
 			hCamera.m_camFrameList.push_back(list);
@@ -351,12 +344,12 @@ int main() {
 		}
 	}
 	
-	VideoWriter writer0("video0.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(hCamera.m_frameSizeList[0].x, hCamera.m_frameSizeList[0].y));
-	VideoWriter writer1("video1.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(hCamera.m_frameSizeList[1].x, hCamera.m_frameSizeList[1].y));
-	VideoWriter writer2("video2.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(hCamera.m_frameSizeList[2].x, hCamera.m_frameSizeList[2].y));
-	VideoWriter writer3("video3.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(hCamera.m_frameSizeList[3].x, hCamera.m_frameSizeList[3].y));
-	VideoWriter writer4("video4.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(hCamera.m_frameSizeList[4].x, hCamera.m_frameSizeList[4].y));
-	VideoWriter writer5("video5.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(hCamera.m_frameSizeList[5].x, hCamera.m_frameSizeList[5].y));
+	VideoWriter writer0("videone0.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(hCamera.m_frameSizeList[0].x, hCamera.m_frameSizeList[0].y));
+	VideoWriter writer1("videone1.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(hCamera.m_frameSizeList[1].x, hCamera.m_frameSizeList[1].y));
+	VideoWriter writer2("videone2.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(hCamera.m_frameSizeList[2].x, hCamera.m_frameSizeList[2].y));
+	VideoWriter writer3("videone3.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(hCamera.m_frameSizeList[3].x, hCamera.m_frameSizeList[3].y));
+	VideoWriter writer4("videone4.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(hCamera.m_frameSizeList[4].x, hCamera.m_frameSizeList[4].y));
+	VideoWriter writer5("videone5.avi", CV_FOURCC('M', 'J', 'P', 'G'), 25, Size(hCamera.m_frameSizeList[5].x, hCamera.m_frameSizeList[5].y));
 
 	thread threads;
 	for (int i = 0; i < hCamera.m_camPath.size(); i++)
@@ -394,11 +387,11 @@ int main() {
 			&& hCamera.m_camFrameList[2].size() && hCamera.m_camFrameList[3].size()
 			&& hCamera.m_camFrameList[4].size() && hCamera.m_camFrameList[5].size())
 		{
-			imshow("win0", hCamera.m_camFrameList[0].front());
+			//imshow("win0", hCamera.m_camFrameList[0].front());
 			//imshow("win0", hCamera.m_camFrameList[1].front());
 			//imshow("win0", hCamera.m_camFrameList[2].front());
 			//imshow("win0", hCamera.m_camFrameList[3].front());
-			//imshow("win0", hCamera.m_camFrameList[4].front());
+			imshow("win0", hCamera.m_camFrameList[4].front());
 			//imshow("win0", hCamera.m_camFrameList[5].front());
 			if ('q' == waitKey(1))
 			{
@@ -419,13 +412,6 @@ int main() {
 			hCamera.m_camFrameList[5].pop_front();
 
 		}		
-		if (hCamera.m_camFrameList[0].size() || hCamera.m_camFrameList[1].size()
-			|| hCamera.m_camFrameList[2].size() || hCamera.m_camFrameList[3].size()
-			|| hCamera.m_camFrameList[4].size() || hCamera.m_camFrameList[5].size())
-		{
-			continue;
-			
-		}
 		Sleep(3);
 	}
 	return 0;
@@ -434,11 +420,75 @@ int main() {
 
 
 //目标跟踪
-#if 0
+#if 1
+
+Rect2d getFrameRect(Mat frame, Rect2d srcRoi, double scale = 2)
+{
+	Rect2d resultRoi;
+	if (scale < 1) return srcRoi;
+
+	double widthEnlarge = srcRoi.width * (scale - 1) / 2;
+	double heightEnlarge = srcRoi.height * (scale - 1) / 2;
+	//x
+	if (srcRoi.x - widthEnlarge < 0){
+		resultRoi.x = 0;
+	}else{	
+		resultRoi.x = srcRoi.x - widthEnlarge;
+	}
+	//y
+	if (srcRoi.y - heightEnlarge < 0) {
+		resultRoi.y = 0;
+	}
+	else {
+		resultRoi.y = srcRoi.y - heightEnlarge;
+	}
+	//w
+	if (srcRoi.x + srcRoi.width  + heightEnlarge > frame.cols) {
+		resultRoi.width = frame.cols - resultRoi.x;
+	}
+	else {
+		resultRoi.width = srcRoi.width + widthEnlarge;
+	}
+	//h
+	if (srcRoi.y + srcRoi.height + heightEnlarge > frame.cols) {
+		resultRoi.height = frame.cols - resultRoi.y;
+	}
+	else {
+		resultRoi.height = srcRoi.height + heightEnlarge;
+	}
+	
+	return resultRoi;
+}
+Rect2d getNewRoi(Rect2d frameRect, Rect2d roi) {
+	Rect2d newRoi;
+	newRoi.x = roi.x - frameRect.x;
+	newRoi.y = roi.y - frameRect.y;
+	newRoi.width = roi.width;
+	newRoi.height = roi.height;
+	return newRoi;
+}
+Rect2d reRoi(Rect2d frameRect, Rect2d newRoi) {
+	Rect2d roi;
+	roi.x = newRoi.x + frameRect.x;
+	roi.y = newRoi.y + frameRect.y;
+	roi.width = newRoi.width;
+	roi.height = newRoi.height;
+	return roi;
+}
+
+Rect2d  changeRect( Rect2d &srcRect) {
+	Rect2d dstRect;
+	dstRect.x = srcRect.x;
+	dstRect.y = srcRect.y;
+	dstRect.width = srcRect.width;
+	dstRect.height = srcRect.height;
+	return dstRect;
+}
+
 int main()
 {
 	VideoCapture cap;
-	cap.open("video\\原视频.avi");
+	cap.open("video\\Vid1we.avi");
 	Mat frame;
 	vector<Point2i> objectPath;
 	
@@ -454,8 +504,9 @@ int main()
 	//Ptr<Tracker> tracker = Tracker::create("TLD");
 	//Ptr<Tracker> tracker = Tracker::create("MEDIANFLOW");
 
-	Ptr<Tracker> tracker = TrackerGOTURN::create();
-	
+	Ptr<Tracker> trackerKCF = TrackerKCF::create();
+	Ptr<Tracker> trackerTLD = TrackerTLD::create();
+
 	int count = 0;
 	while (true)
 	{
@@ -471,14 +522,6 @@ int main()
 			break;
 		}
 	}
-	/*Mat resultHSV;
-	vector<Mat> HSV;
-
-	cvtColor(frame, resultHSV, CV_BGR2HSV);
-	split(resultHSV, HSV);
-	equalizeHist(HSV[2], HSV[2]);
-	merge(HSV, resultHSV);
-	cvtColor(resultHSV, frame, CV_HSV2BGR);*/
 
 	Rect2d roi = selectROI("output", frame);
 	if (roi.width == 0 || roi.height == 0)
@@ -487,9 +530,15 @@ int main()
 	}
 	
 	//跟踪
-	tracker->init(frame, roi);
-	objectPath.push_back(Point(roi.x + roi.width/2, roi.y + roi.height/2));
-	while (true)
+	trackerKCF->init(frame, roi);
+	trackerTLD->init(frame, roi);
+	int trackeNum = 0;
+	objectPath.push_back(Point(roi.x + roi.width / 2, roi.y + roi.height / 2));
+	int frame_cn = 1;
+	Rect2d oldRoi;
+	oldRoi = changeRect(roi);
+	cout << frame_cn << " 帧       " << oldRoi << "           " << roi << endl;
+	while (frame_cn++)
 	{
 		cap >> frame;
 		if (frame.empty()) break;
@@ -500,32 +549,65 @@ int main()
 		//merge(HSV, resultHSV);
 		//cvtColor(resultHSV, frame, CV_HSV2BGR);
 
+		//Rect2d frameRect = getFrameRect(frame, roi);
+		//rectangle(frame, frameRect, Scalar(0, 255, 0,0.5), -5);
+		//Mat newFeame = frame(frameRect);
+		//Rect2d newRoi = getNewRoi(frameRect, roi);
+		//bool isfound = tracker->update(newFeame, newRoi);
+		//roi = reRoi(frameRect, newRoi);
 		// update the tracking result
-		//tracker->update(frame, roi);
-		bool isfound = tracker->update(frame, roi);
-		if (!isfound)
+		
+		
+		switch (trackeNum)
 		{
-			cout << "The target has been lost...\n";
-			//waitKey(0);
-			//return 0;
+		case 0:
+			trackerTLD->update(frame, roi);
+			if (roi.x + roi.width < oldRoi.x || roi.x > oldRoi.x + oldRoi.width
+				|| roi.y + roi.height < oldRoi.y || roi.y > oldRoi.y + oldRoi.height)
+			{
+				cout << "TLD tracker filed!   "<< frame_cn << endl;
+				trackeNum = 1;
+				roi = changeRect(oldRoi);
+				trackerKCF->init(frame, oldRoi);
+			}else
+			{
+				oldRoi = changeRect(roi);
+			}
+			break;
+		case 1:
+			bool isfound = trackerKCF->update(frame, roi);
+			if (!isfound)
+			{
+				cout << "KCF tracker filed!   " << frame_cn << endl;
+				trackeNum = 0;
+				roi = changeRect(oldRoi);
+				trackerTLD->init(frame, oldRoi);
+			}else
+			{
+				oldRoi = changeRect(roi);
+			}
+			break;
 		}
+	
+		cout << frame_cn<<" 帧       "<< oldRoi << "           " << roi << endl;
 		Point2i center;
 		center = objectPath.back();
-		if (center.x != roi.x + roi.width / 2 && center.y != roi.y + roi.height / 2)
+		if (center.x != oldRoi.x + oldRoi.width / 2 && center.y != oldRoi.y + oldRoi.height / 2)
 		{
-			objectPath.push_back(Point(roi.x + roi.width / 2, roi.y + roi.height / 2));
+			objectPath.push_back(Point(oldRoi.x + oldRoi.width / 2, oldRoi.y + oldRoi.height / 2));
 		}
 
 		for (int i = 0; i < objectPath.size() - 1; i++)
 		{
-			line(frame, objectPath[i], objectPath[i+1], Scalar(0, 0, 255));
+			//line(frame, objectPath[i], objectPath[i+1], Scalar(0, 0, 255));
+			circle(frame, objectPath[i], 2, Scalar(0, 0, 255), -1);
 		}
-		rectangle(frame, roi, Scalar(0, 255, 0), 2, 8);
+		rectangle(frame, roi, Scalar(0, 255, 0), 2);
 		imshow("output", frame);
-		waitKey(1);
+		waitKey(0);
 	}
 
-	cap.release();
+	//cap.release();
 	return 0;
 }
 #endif

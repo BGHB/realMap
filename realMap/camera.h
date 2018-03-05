@@ -6,6 +6,8 @@ class Camera
 {
 public:
 	
+	vector<Rect>   m_ignoreImgRoundList;
+
 	static const int        m_camNum = 6;
 	VideoCapture            cap[6];
 
@@ -23,7 +25,6 @@ public:
 	
 	int m_key = 0;
 
-	vector<Mat>             m_camMask;
 	vector<Mat>             m_camFrame;
 	vector<Mat>             m_camCurrrentFrame;
 	vector<list<Mat> >      m_camFrameList;
@@ -37,7 +38,7 @@ public:
 	Mat 			        getTransMat(vector<Mat> transformList);
 	void                    saveTransformList();
 	
-	
+		
 	void warpMat(Mat & src, Mat & result, Mat transform, Mat mask);
 	Mat drawCross(Mat & img, int distance = 100);
 	static void on_mouse(int event, int x, int y, int flags, void* ustc);

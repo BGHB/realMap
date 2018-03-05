@@ -8,16 +8,11 @@ void Camera::init()
 {
 	typedef list<Mat> LISTL;
 	LISTL list;
-	Mat mask;
-	char maskPath[128];
+	Mat emptyMat;
 	for (int i = 0; i < m_camNum; i++)
 	{
-		sprintf(maskPath, "%s%d%s", "mask//", i, "_mask.bmp");
-		mask = imread(maskPath, 0);
-		m_camMask.push_back(mask.clone());
-		m_camFrame.push_back(mask.clone());
-		m_camFrameList.push_back(list);
-		m_camCurrrentFrame.push_back(mask.clone());
+		m_camCurrrentFrame.push_back(emptyMat.clone());
+		m_camFrameList.push_back(list);	
 	}
 
 	result.create(imgHeight - 200, imgWidth - 160, CV_8UC3);
@@ -28,6 +23,7 @@ void Camera::init()
 	FileStorage readFile("config.xml", FileStorage::READ);
 	if (readFile.isOpened()) {
 		readFile["camPath"] >> m_camPath;
+		readFile["ignoreImgRoundList"] >> m_ignoreImgRoundList;
 		readFile["pointList"] >> m_pointList;
 		readFile["transformList"] >> m_transformList;
 		readFile.release();
@@ -56,12 +52,12 @@ void Camera::init_generate()
 {
 	typedef list<Mat> LISTL;
 	LISTL list;
-	Mat mask;
-	char maskPath[128];
+
 	//加载配置文件,相机/视频路径、转换前的点、转换后的点、准换矩阵
 	FileStorage readFile("config.xml", FileStorage::READ);
 	if (readFile.isOpened()){
 		readFile["camPath"] >> m_camPath;
+		readFile["ignoreImgRoundList"] >> m_ignoreImgRoundList;
 		readFile["pointList"] >> m_pointList;
 		readFile["transformList"] >> m_transformList;
 		readFile.release();
@@ -77,6 +73,11 @@ void Camera::init_generate()
 		}
 		readFile["camPath"] >> m_camPath;
 		readFile.release();
+		Rect rect(0, 0, 0, 0);
+		for (int i = 0; i < m_camPath.size(); i++)
+		{
+			m_ignoreImgRoundList.push_back(rect);
+		}
 		Point2f point;
 		for (int i = 0; i < m_camPath.size(); i++)
 		{
@@ -104,6 +105,7 @@ void Camera::init_generate()
 		FileStorage writeFile("config.xml", FileStorage::WRITE);
 		if (writeFile.isOpened()) {
 			writeFile << "camPath"<< m_camPath;
+			writeFile << "ignoreImgRoundList" << m_ignoreImgRoundList;
 			writeFile << "pointList" <<  m_pointList;
 			writeFile << "transformList" << m_transformList;
 			writeFile.release();
@@ -126,17 +128,13 @@ void Camera::init_generate()
 			cout << "camera " << i << " is opened failed!" << endl;
 		}
 	}
-	
+	Mat emptyMat;
 	for (int i = 0; i < m_camPath.size(); i++)
 	{
-		sprintf(maskPath, "%s%d%s", "mask//", i, "_mask.bmp");
-		mask = imread(maskPath, 0);
-		m_camMask.push_back(mask.clone());
-		m_camFrame.push_back(mask.clone());
 		m_camFrameList.push_back(list);
-		m_camCurrrentFrame.push_back(mask.clone());
+		m_camCurrrentFrame.push_back(emptyMat.clone());
 	}
-
+	
 	result.create(imgHeight - 200, imgWidth - 160, CV_8UC3);
 	//距离，序号，列，行（dist, num, x, y）
 	transMat.create(result.rows, result.cols, CV_32SC4);
@@ -195,9 +193,9 @@ Mat Camera::getTransMat(vector<Mat> transformList)
 		double * px1 = m_transformList[k].ptr<double>(1);
 		double * px2 = m_transformList[k].ptr<double>(2);
 		int transRow, transCol;
-		for (int j = 0; j < m_frameSizeList[k].y; j++)
+		for (int j = m_ignoreImgRoundList[k].y; j < m_frameSizeList[k].y - m_ignoreImgRoundList[k].height; j++)
 		{
-			for (int i = 0; i < m_frameSizeList[k].x; i++)
+			for (int i = m_ignoreImgRoundList[k].x; i < m_frameSizeList[k].x - m_ignoreImgRoundList[k].width; i++)
 			{
 				transCol = (i * px0[0] + j * px0[1] + px0[2]) / (i * px2[0] + j * px2[1] + px2[2]);
 				transRow = (i * px1[0] + j * px1[1] + px1[2]) / (i * px2[0] + j * px2[1] + px2[2]);
@@ -248,6 +246,8 @@ void Camera::saveTransformList()
 	writeFile << "transformList" << m_transformList;
 	writeFile.release();
 }
+
+
 
 //鼠标操作
 void Camera::on_mouse(int event, int x, int y, int flags, void* ustc)

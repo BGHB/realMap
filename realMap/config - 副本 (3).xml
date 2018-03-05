@@ -7,13 +7,6 @@
   "rtsp://admin:Hk123456@192.168.10.120/cam/realmonitor?channel=1&amp;subtype=0"
   "rtsp://admin:Hk123456@192.168.10.121/cam/realmonitor?channel=1&amp;subtype=0"
   rtsp://admin:Hk123456@192.168.10.122/sub/av_stream</camPath>
-<ignoreImgRoundList>
-  0 0 0 0
-  0 0 0 0
-  0 0 0 0
-  0 0 0 0
-  0 0 0 0
-  0 0 0 0 </ignoreImgRoundList>
 <pointList>
   385. 1003. 1576. 927. 851. 261. 225. 228. 315. 619. 1049. 64. 1191.
   250. 441. 805. 617. 322. 947. 247. 226. 581. 557. 846. 480. 200. 888.
