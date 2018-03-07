@@ -209,89 +209,6 @@ int main() {
 }
 #endif
 
-//config版本，备份，20180123
-#if 0
-void thread_task(string camPath, list<Mat> &camFrameList, int i) {
-	VideoCapture cap;
-	Mat img;
-	cap.open(camPath);
-	if (!cap.isOpened())
-		cout << "cam " << i << " opened failed!" << endl;
-	while (true)
-	{
-		cap >> img;
-		if (!img.empty())
-		{
-			camFrameList.push_back(img.clone());
-		}
-		this_thread::sleep_for(2ms);
-	}
-}
-
-int main() {
-	Camera hCamera;
-	hCamera.init();
-
-	thread threads;
-	for (int i = 0; i < 6; i++)
-	{
-		threads = thread(thread_task, hCamera.m_camPath[i], ref(hCamera.m_camFrameList[i]), i);
-		threads.detach();
-	}
-
-	int result_w = 1920;
-	int result_h = 1080;
-	Mat resultForShow;
-	Mat result;
-	result.create(result_h - 200, result_w - 160, CV_8UC3);
-
-	double tstart = cvGetTickCount();
-	cout << "                       耗时：" << (cvGetTickCount() - tstart) / cvGetTickFrequency() / 1000 << "ms" << endl;
-	tstart = cvGetTickCount();
-	//namedWindow("result", 1);
-	while (true)
-	{
-		int flag = 0;
-		for (int i = 0; i < hCamera.m_camNum; i++) {
-			cout << hCamera.m_camFrameList[i].size() << "  ";
-			if (0 < hCamera.m_camFrameList[i].size()) {
-				flag++;
-			}
-		}
-		cout << endl;
-
-		if (6 == flag) {
-			if (result.isContinuous()) {
-				memset(result.data, 0, result.rows*result.cols*result.channels());
-			}
-			for (int i = 0; i < hCamera.m_camNum; i++)
-			{
-				hCamera.m_camCurrrentFrame[i] = hCamera.m_camFrameList[i].back().clone();
-				hCamera.m_camFrameList[i].pop_front();
-				hCamera.warpMat(hCamera.m_camCurrrentFrame[i], result, hCamera.m_transformList[i], hCamera.m_camMask[i]);
-			}
-			//
-			cout << "                       耗时：" << (cvGetTickCount() - tstart) / cvGetTickFrequency() / 1000 << "ms" << endl;
-			tstart = cvGetTickCount();
-			for (int k = 0; k < hCamera.m_pointList.size(); k++)
-			{
-				//circle(result, hTransform.m_pointList[k], 4, Scalar(0, 0, 255), -1);
-				circle(result, hCamera.m_pointListTrans[k], 4, Scalar(0, 255 - k / 4 * 255 / 6, k / 4 * 255 / 6), -1);
-			}
-			result = hCamera.drawCross(result, 80);
-			setMouseCallback("result", Camera::on_mouse, (void *)&hCamera);
-			imshow("result", result);
-			waitKey(1);
-		}
-		else
-		{
-			Sleep(3);
-		}
-	}
-	return 0;
-}
-
-#endif
 
 //保存6路视频
 #if 0
@@ -422,69 +339,6 @@ int main() {
 //目标跟踪
 #if 1
 
-Rect2d getFrameRect(Mat frame, Rect2d srcRoi, double scale = 2)
-{
-	Rect2d resultRoi;
-	if (scale < 1) return srcRoi;
-
-	double widthEnlarge = srcRoi.width * (scale - 1) / 2;
-	double heightEnlarge = srcRoi.height * (scale - 1) / 2;
-	//x
-	if (srcRoi.x - widthEnlarge < 0){
-		resultRoi.x = 0;
-	}else{	
-		resultRoi.x = srcRoi.x - widthEnlarge;
-	}
-	//y
-	if (srcRoi.y - heightEnlarge < 0) {
-		resultRoi.y = 0;
-	}
-	else {
-		resultRoi.y = srcRoi.y - heightEnlarge;
-	}
-	//w
-	if (srcRoi.x + srcRoi.width  + heightEnlarge > frame.cols) {
-		resultRoi.width = frame.cols - resultRoi.x;
-	}
-	else {
-		resultRoi.width = srcRoi.width + widthEnlarge;
-	}
-	//h
-	if (srcRoi.y + srcRoi.height + heightEnlarge > frame.cols) {
-		resultRoi.height = frame.cols - resultRoi.y;
-	}
-	else {
-		resultRoi.height = srcRoi.height + heightEnlarge;
-	}
-	
-	return resultRoi;
-}
-Rect2d getNewRoi(Rect2d frameRect, Rect2d roi) {
-	Rect2d newRoi;
-	newRoi.x = roi.x - frameRect.x;
-	newRoi.y = roi.y - frameRect.y;
-	newRoi.width = roi.width;
-	newRoi.height = roi.height;
-	return newRoi;
-}
-Rect2d reRoi(Rect2d frameRect, Rect2d newRoi) {
-	Rect2d roi;
-	roi.x = newRoi.x + frameRect.x;
-	roi.y = newRoi.y + frameRect.y;
-	roi.width = newRoi.width;
-	roi.height = newRoi.height;
-	return roi;
-}
-
-Rect2d  changeRect( Rect2d &srcRect) {
-	Rect2d dstRect;
-	dstRect.x = srcRect.x;
-	dstRect.y = srcRect.y;
-	dstRect.width = srcRect.width;
-	dstRect.height = srcRect.height;
-	return dstRect;
-}
-
 int main()
 {
 	VideoCapture cap;
@@ -524,20 +378,20 @@ int main()
 	}
 
 	Rect2d roi = selectROI("output", frame);
-	if (roi.width == 0 || roi.height == 0)
-	{
+	if (roi.width == 0 || roi.height == 0){
 		return -1;
 	}
 	
 	//跟踪
-	trackerKCF->init(frame, roi);
+	
 	trackerTLD->init(frame, roi);
+	//trackerKCF->init(frame, roi);
 	int trackeNum = 0;
 	objectPath.push_back(Point(roi.x + roi.width / 2, roi.y + roi.height / 2));
 	int frame_cn = 1;
-	Rect2d oldRoi;
-	oldRoi = changeRect(roi);
-	cout << frame_cn << " 帧       " << oldRoi << "           " << roi << endl;
+	vector<Rect2d> oldList;
+	oldList.push_back(roi);
+	cout << frame_cn << " 帧       " << oldList.back() << "           " << roi << endl;
 	while (frame_cn++)
 	{
 		cap >> frame;
@@ -557,52 +411,60 @@ int main()
 		//roi = reRoi(frameRect, newRoi);
 		// update the tracking result
 		
-		
 		switch (trackeNum)
 		{
 		case 0:
+			cout << "now TLD! ";
 			trackerTLD->update(frame, roi);
-			if (roi.x + roi.width < oldRoi.x || roi.x > oldRoi.x + oldRoi.width
-				|| roi.y + roi.height < oldRoi.y || roi.y > oldRoi.y + oldRoi.height)
+			if (roi.x + roi.width < oldList.back().x || roi.x > oldList.back().x + oldList.back().width
+				|| roi.y + roi.height < oldList.back().y || roi.y > oldList.back().y + oldList.back().height)
 			{
-				cout << "TLD tracker filed!   "<< frame_cn << endl;
+				cout << "TLD tracker filed!   " << endl;
 				trackeNum = 1;
-				roi = changeRect(oldRoi);
-				trackerKCF->init(frame, oldRoi);
+				//roi = oldList.back();
+				roi = Rect(oldList.back().x - oldList.back().x / 16,
+					oldList.back().y - oldList.back().y / 16,
+					oldList.back().width + (frame.cols - oldList.back().width) / 16,
+					oldList.back().height + (frame.rows - oldList.back().height) / 16);
+				
+				trackerTLD->clear();
+				trackerKCF->init(frame, roi);
 			}else
 			{
-				oldRoi = changeRect(roi);
+				oldList.push_back(roi);
 			}
 			break;
 		case 1:
+			cout << "now KCF! ";
 			bool isfound = trackerKCF->update(frame, roi);
 			if (!isfound)
 			{
 				cout << "KCF tracker filed!   " << frame_cn << endl;
 				trackeNum = 0;
-				roi = changeRect(oldRoi);
-				trackerTLD->init(frame, oldRoi);
+				roi = oldList.back();
+				trackerKCF->clear();
+				trackerTLD->init(frame, roi);
 			}else
 			{
-				oldRoi = changeRect(roi);
+				oldList.push_back(roi);
 			}
 			break;
 		}
 	
-		cout << frame_cn<<" 帧       "<< oldRoi << "           " << roi << endl;
+		cout << frame_cn<<" 帧       "<< oldList.back() << "           " << roi << endl;
 		Point2i center;
 		center = objectPath.back();
-		if (center.x != oldRoi.x + oldRoi.width / 2 && center.y != oldRoi.y + oldRoi.height / 2)
+		if (center.x != oldList.back().x + oldList.back().width / 2 && center.y != oldList.back().y + oldList.back().height / 2)
 		{
-			objectPath.push_back(Point(oldRoi.x + oldRoi.width / 2, oldRoi.y + oldRoi.height / 2));
+			objectPath.push_back(Point(oldList.back().x + oldList.back().width / 2, oldList.back().y + oldList.back().height / 2));
 		}
 
 		for (int i = 0; i < objectPath.size() - 1; i++)
 		{
-			//line(frame, objectPath[i], objectPath[i+1], Scalar(0, 0, 255));
-			circle(frame, objectPath[i], 2, Scalar(0, 0, 255), -1);
+			line(frame, objectPath[i], objectPath[i+1], Scalar(0, 0, 255));
+			//circle(frame, objectPath[i], 2, Scalar(0, 0, 255), -1);
 		}
-		rectangle(frame, roi, Scalar(0, 255, 0), 2);
+		rectangle(frame, oldList.back(), Scalar(0, 255, 0), 2);
 		imshow("output", frame);
 		waitKey(0);
 	}
@@ -611,3 +473,31 @@ int main()
 	return 0;
 }
 #endif
+
+#if 0
+int main() {
+	VideoCapture cap;
+	VideoWriter writer;
+	cap.open("");
+	writer.open("");
+	Mat frame;
+	while (true)
+	{
+		cap >> frame;
+		if (frame.empty())
+		{
+			break;
+		}
+		imshow("win", frame);
+		if ('s' == waitKey(0))
+		{
+			writer << frame;
+		}
+	}
+	return 0;
+}
+
+
+
+#endif
+
